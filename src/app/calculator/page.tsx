@@ -12,15 +12,6 @@ export default function CalculatorPage() {
   return (
     <MainLayout>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 mt-16 sm:mt-20">
-        <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-            Calculateur de Santé
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
-            Entrez vos informations pour obtenir des calculs personnalisés et des recommandations adaptées à vos objectifs.
-          </p>
-        </div>
-
         {user ? (
           <HealthCalculator />
         ) : (

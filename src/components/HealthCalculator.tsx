@@ -345,7 +345,7 @@ export default function HealthCalculator() {
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Calculateur de Santé Personnalisé
+            IA Coach Sportif
           </h1>
           <p className="text-lg text-gray-600">
             Obtenez des recommandations personnalisées basées sur votre profil unique
