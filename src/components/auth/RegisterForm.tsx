@@ -28,10 +28,8 @@ export const RegisterForm = () => {
 
   useEffect(() => {
     // Initialiser le reCAPTCHA
-    const recaptchaContainer = document.getElementById('recaptcha-container');
-    if (recaptchaContainer) {
-      // @ts-ignore - Firebase v9+ a un problème de typage avec RecaptchaVerifier
-      recaptchaVerifierRef.current = new RecaptchaVerifier(auth, recaptchaContainer, {
+    if (!recaptchaVerifierRef.current && auth) {
+      recaptchaVerifierRef.current = new RecaptchaVerifier('recaptcha-container', {
         size: 'normal',
         callback: () => {
           console.log('reCAPTCHA vérifié');
@@ -40,7 +38,7 @@ export const RegisterForm = () => {
           console.log('reCAPTCHA expiré');
           setError('La vérification reCAPTCHA a expiré. Veuillez réessayer.');
         }
-      });
+      }, auth);
     }
 
     return () => {

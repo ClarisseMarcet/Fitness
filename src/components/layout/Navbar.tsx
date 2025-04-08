@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export const Navbar: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { user, handleSignOut } = useAuth();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -27,8 +27,8 @@ export const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
-      await logout();
-      router.push('/');
+      await handleSignOut();
+      router.push('/login');
     } catch (error) {
       console.error('Erreur lors de la déconnexion:', error);
     }
