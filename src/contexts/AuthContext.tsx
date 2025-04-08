@@ -14,14 +14,14 @@ import {
   handleRedirectResult
 } from '../services/firebaseService';
 
-interface AuthContextType {
+export interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
   error: string | null;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, displayName: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
-  logout: () => Promise<void>;
+  handleSignIn: (email: string, password: string) => Promise<void>;
+  handleSignUp: (email: string, password: string, displayName: string) => Promise<void>;
+  handleSignInWithGoogle: () => Promise<void>;
+  handleSignOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       const userProfile = await signUp(email, password, displayName);
       setUser(userProfile);
-      router.push('/dashboard');
+      // La redirection est maintenant gérée dans le composant RegisterForm
     } catch (error: any) {
       console.error('Error signing up:', error);
       
@@ -118,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setError('Erreur lors de la création du compte. Veuillez réessayer.');
       }
+      throw error; // Propager l'erreur pour qu'elle soit gérée dans le composant
     }
   };
 
@@ -165,10 +166,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     loading,
     error,
-    signIn: handleSignIn,
-    signUp: handleSignUp,
-    signInWithGoogle: handleSignInWithGoogle,
-    logout: handleLogout,
+    handleSignIn,
+    handleSignUp,
+    handleSignInWithGoogle,
+    handleSignOut: handleLogout,
   };
 
   return (

@@ -11,7 +11,10 @@ import {
   getRedirectResult,
   browserSessionPersistence,
   browserLocalPersistence,
-  setPersistence
+  setPersistence,
+  RecaptchaVerifier,
+  signInWithPhoneNumber,
+  PhoneAuthProvider
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -432,5 +435,41 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
   } catch (error) {
     console.error('Error getting user profile:', error);
     throw error;
+  }
+};
+
+export const sendOTP = async (phoneNumber: string, recaptchaVerifier: RecaptchaVerifier) => {
+  try {
+    console.log('Envoi du code OTP au numéro:', phoneNumber);
+    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier);
+    console.log('Code OTP envoyé avec succès');
+    return confirmationResult;
+  } catch (error: any) {
+    console.error('Erreur lors de l\'envoi du code OTP:', error);
+    if (error.code === 'auth/invalid-phone-number') {
+      throw new Error('Le numéro de téléphone n\'est pas valide');
+    } else if (error.code === 'auth/too-many-requests') {
+      throw new Error('Trop de tentatives. Veuillez réessayer plus tard');
+    } else {
+      throw new Error('Erreur lors de l\'envoi du code OTP');
+    }
+  }
+};
+
+export const verifyOTP = async (confirmationResult: any, otp: string) => {
+  try {
+    console.log('Vérification du code OTP...');
+    const result = await confirmationResult.confirm(otp);
+    console.log('Code OTP vérifié avec succès');
+    return result;
+  } catch (error: any) {
+    console.error('Erreur lors de la vérification du code OTP:', error);
+    if (error.code === 'auth/invalid-verification-code') {
+      throw new Error('Le code OTP est incorrect');
+    } else if (error.code === 'auth/code-expired') {
+      throw new Error('Le code OTP a expiré');
+    } else {
+      throw new Error('Erreur lors de la vérification du code OTP');
+    }
   }
 }; 
