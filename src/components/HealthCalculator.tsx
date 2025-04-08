@@ -341,7 +341,7 @@ export default function HealthCalculator() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-6 px-4 sm:px-6">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -354,7 +354,7 @@ export default function HealthCalculator() {
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
           {/* Barre de progression */}
-          <div className="bg-gray-50 px-6 py-4">
+          <div className="bg-gray-50 px-4 sm:px-6 py-4">
             <div className="flex justify-between mb-2">
               {[1, 2, 3, 4].map((step) => (
                 <div
@@ -363,39 +363,39 @@ export default function HealthCalculator() {
                     step <= currentStep ? 'text-blue-600' : 'text-gray-400'
                   }`}
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${
+                  <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center border-2 ${
                     step <= currentStep ? 'border-blue-600 bg-blue-50' : 'border-gray-300'
                   }`}>
-                    {step}
+                    <span className="text-xs sm:text-sm">{step}</span>
                   </div>
                   {step < 4 && (
-                    <div className={`h-1 w-16 mx-2 ${
+                    <div className={`h-1 w-6 sm:w-16 mx-1 sm:mx-2 ${
                       step < currentStep ? 'bg-blue-600' : 'bg-gray-300'
                     }`} />
                   )}
                 </div>
               ))}
             </div>
-            <div className="flex justify-between text-sm text-gray-500">
-              <span>Informations de base</span>
+            <div className="flex justify-between text-xs sm:text-sm text-gray-500">
+              <span>Infos de base</span>
               <span>Objectifs</span>
               <span>Habitudes</span>
-              <span>Analyse IA</span>
+              <span>Analyse</span>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-6">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6">
             {/* Étape 1: Informations de base */}
             {currentStep === 1 && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
                   <Icon icon="mdi:account-details" className="inline-block mr-2" />
                   Informations de base
                 </h2>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Âge
                     </label>
                     <input
@@ -409,7 +409,7 @@ export default function HealthCalculator() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Genre
                     </label>
                     <select
@@ -424,7 +424,7 @@ export default function HealthCalculator() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Poids (kg)
                     </label>
                     <input
@@ -438,7 +438,7 @@ export default function HealthCalculator() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Taille (cm)
                     </label>
                     <input
@@ -456,15 +456,15 @@ export default function HealthCalculator() {
 
             {/* Étape 2: Objectifs et préférences */}
             {currentStep === 2 && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
                   <Icon icon="mdi:target" className="inline-block mr-2" />
                   Objectifs et préférences
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Objectif principal
                     </label>
                     <select
@@ -481,7 +481,7 @@ export default function HealthCalculator() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Niveau d'activité
                     </label>
                     <select
@@ -499,7 +499,7 @@ export default function HealthCalculator() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Fréquence d'entraînement souhaitée
                     </label>
                     <select
@@ -519,15 +519,15 @@ export default function HealthCalculator() {
 
             {/* Étape 3: Habitudes de vie */}
             {currentStep === 3 && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
                   <Icon icon="mdi:heart-pulse" className="inline-block mr-2" />
                   Habitudes de vie
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Heures de sommeil par nuit
                     </label>
                     <input
@@ -542,7 +542,7 @@ export default function HealthCalculator() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Niveau de stress
                     </label>
                     <select
@@ -558,7 +558,7 @@ export default function HealthCalculator() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Type de régime alimentaire
                     </label>
                     <select
@@ -603,57 +603,82 @@ export default function HealthCalculator() {
 
             {/* Étape 4: Analyse IA */}
             {currentStep === 4 && (
-              <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              <div className="space-y-4 sm:space-y-6">
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-4 sm:mb-6">
                   <Icon icon="mdi:robot" className="inline-block mr-2" />
                   Analyse IA
                 </h2>
 
                 {analysisResults ? (
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-blue-50 p-6 rounded-lg">
-                        <h3 className="text-lg font-semibold text-blue-900 mb-4">Vos métriques</h3>
-                        <div className="space-y-2">
-                          <p className="text-blue-800">
-                            <span className="font-medium">IMC:</span> {analysisResults.bmi.toFixed(1)}
-                          </p>
-                          <p className="text-blue-800">
-                            <span className="font-medium">Métabolisme de base (BMR):</span> {Math.round(analysisResults.bmr)} kcal/jour
-                          </p>
-                          <p className="text-blue-800">
-                            <span className="font-medium">Dépense énergétique totale (TDEE):</span> {Math.round(analysisResults.tdee)} kcal/jour
-                          </p>
-                          <p className="text-blue-800">
-                            <span className="font-medium">Calories cibles:</span> {Math.round(analysisResults.targetCalories)} kcal/jour
-                          </p>
+                  <div className="space-y-4 sm:space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                      <div className="bg-blue-50 p-4 sm:p-6 rounded-lg">
+                        <h3 className="text-lg font-semibold text-blue-900 mb-3 flex items-center">
+                          <Icon icon="mdi:chart-box" className="mr-2" />
+                          Vos métriques
+                        </h3>
+                        <div className="space-y-2 sm:space-y-3">
+                          <div className="flex justify-between items-center bg-blue-100/50 rounded-lg p-2 sm:p-3">
+                            <span className="font-medium text-blue-800">IMC:</span>
+                            <span className="text-blue-800">{analysisResults.bmi.toFixed(1)}</span>
+                          </div>
+                          <div className="flex justify-between items-center bg-blue-100/50 rounded-lg p-2 sm:p-3">
+                            <span className="font-medium text-blue-800">Métabolisme de base:</span>
+                            <span className="text-blue-800">{Math.round(analysisResults.bmr)} kcal/jour</span>
+                          </div>
+                          <div className="flex justify-between items-center bg-blue-100/50 rounded-lg p-2 sm:p-3">
+                            <span className="font-medium text-blue-800">Dépense énergétique totale:</span>
+                            <span className="text-blue-800">{Math.round(analysisResults.tdee)} kcal/jour</span>
+                          </div>
+                          <div className="flex justify-between items-center bg-blue-100/50 rounded-lg p-2 sm:p-3">
+                            <span className="font-medium text-blue-800">Calories cibles:</span>
+                            <span className="text-blue-800">{Math.round(analysisResults.targetCalories)} kcal/jour</span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="bg-green-50 p-6 rounded-lg">
-                        <h3 className="text-lg font-semibold text-green-900 mb-4">Recommandations</h3>
-                        <div className="space-y-4">
+                      <div className="bg-green-50 p-4 sm:p-6 rounded-lg">
+                        <h3 className="text-lg font-semibold text-green-900 mb-3 flex items-center">
+                          <Icon icon="mdi:star-check" className="mr-2" />
+                          Recommandations
+                        </h3>
+                        <div className="space-y-3 sm:space-y-4 overflow-y-auto max-h-[300px] pr-2">
                           <div>
-                            <h4 className="font-medium text-green-800 mb-2">Alimentation</h4>
-                            <ul className="list-disc list-inside text-green-700">
+                            <h4 className="font-medium text-green-800 mb-2 flex items-center">
+                              <Icon icon="mdi:food-apple" className="mr-2" />
+                              Alimentation
+                            </h4>
+                            <ul className="list-none space-y-1">
                               {analysisResults.recommendations.diet.map((rec, index) => (
-                                <li key={index}>{rec}</li>
+                                <li key={index} className="pl-4 border-l-2 border-green-200 text-green-700 text-sm py-1">
+                                  {rec}
+                                </li>
                               ))}
                             </ul>
                           </div>
                           <div>
-                            <h4 className="font-medium text-green-800 mb-2">Exercice</h4>
-                            <ul className="list-disc list-inside text-green-700">
+                            <h4 className="font-medium text-green-800 mb-2 flex items-center">
+                              <Icon icon="mdi:dumbbell" className="mr-2" />
+                              Exercice
+                            </h4>
+                            <ul className="list-none space-y-1">
                               {analysisResults.recommendations.exercise.map((rec, index) => (
-                                <li key={index}>{rec}</li>
+                                <li key={index} className="pl-4 border-l-2 border-green-200 text-green-700 text-sm py-1">
+                                  {rec}
+                                </li>
                               ))}
                             </ul>
                           </div>
                           <div>
-                            <h4 className="font-medium text-green-800 mb-2">Mode de vie</h4>
-                            <ul className="list-disc list-inside text-green-700">
+                            <h4 className="font-medium text-green-800 mb-2 flex items-center">
+                              <Icon icon="mdi:heart-pulse" className="mr-2" />
+                              Mode de vie
+                            </h4>
+                            <ul className="list-none space-y-1">
                               {analysisResults.recommendations.lifestyle.map((rec, index) => (
-                                <li key={index}>{rec}</li>
+                                <li key={index} className="pl-4 border-l-2 border-green-200 text-green-700 text-sm py-1">
+                                  {rec}
+                                </li>
                               ))}
                             </ul>
                           </div>
@@ -662,7 +687,7 @@ export default function HealthCalculator() {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-blue-50 rounded-lg p-6">
+                  <div className="bg-blue-50 rounded-lg p-4 sm:p-6">
                     <p className="text-blue-800 mb-4">
                       Notre IA va analyser vos informations pour générer des recommandations personnalisées.
                       Cliquez sur "Analyser" pour obtenir votre plan personnalisé.
@@ -715,27 +740,30 @@ export default function HealthCalculator() {
                   </div>
                 )}
 
-                <div className="flex justify-center">
+                <div className="flex justify-center mt-6">
                   <button
                     type="button"
                     onClick={handleDownloadReport}
-                    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors"
+                    disabled={!analysisResults}
+                    className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
+                    <Icon icon="mdi:download" className="mr-2" />
                     Télécharger le rapport
                   </button>
                 </div>
               </div>
             )}
 
-            <div className="mt-8 flex justify-between">
+            <div className="mt-6 sm:mt-8 flex justify-between">
               {currentStep > 1 && (
                 <button
                   type="button"
                   onClick={prevStep}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-3 sm:px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <Icon icon="mdi:arrow-left" className="mr-2" />
-                  Précédent
+                  <Icon icon="mdi:arrow-left" className="mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Précédent</span>
+                  <span className="sm:hidden">Préc.</span>
                 </button>
               )}
               
@@ -743,26 +771,28 @@ export default function HealthCalculator() {
                 <button
                   type="button"
                   onClick={nextStep}
-                  className="ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className={`ml-auto inline-flex items-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${currentStep === 1 && 'ml-0'}`}
                 >
-                  Suivant
-                  <Icon icon="mdi:arrow-right" className="ml-2" />
+                  <span className="hidden sm:inline">Suivant</span>
+                  <span className="sm:hidden">Suiv.</span>
+                  <Icon icon="mdi:arrow-right" className="ml-1 sm:ml-2" />
                 </button>
               ) : (
                 <button
                   type="submit"
                   disabled={loading}
-                  className="ml-auto inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  className={`ml-auto inline-flex items-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 ${currentStep === 1 && 'ml-0'}`}
                 >
                   {loading ? (
                     <>
-                      <Icon icon="mdi:loading" className="animate-spin mr-2" />
-                      Analyse en cours...
+                      <Icon icon="mdi:loading" className="animate-spin mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Analyse en cours...</span>
+                      <span className="sm:hidden">Analyse...</span>
                     </>
                   ) : (
                     <>
-                      <Icon icon="mdi:robot" className="mr-2" />
-                      Analyser
+                      <Icon icon="mdi:robot" className="mr-1 sm:mr-2" />
+                      <span>Analyser</span>
                     </>
                   )}
                 </button>

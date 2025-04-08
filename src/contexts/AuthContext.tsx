@@ -10,7 +10,8 @@ import {
   getCurrentUser, 
   getUserProfile,
   UserProfile,
-  signInWithGoogle
+  signInWithGoogle,
+  handleRedirectResult
 } from '../services/firebaseService';
 
 interface AuthContextType {
@@ -42,6 +43,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadUser = async () => {
       try {
+        // Vérifier s'il y a un résultat de redirection
+        const redirectResult = await handleRedirectResult();
+        if (redirectResult) {
+          setUser(redirectResult);
+          router.push('/dashboard');
+          return;
+        }
+
+        // Sinon, charger l'utilisateur normalement
         const currentUser = await getCurrentUser();
         setUser(currentUser);
       } catch (error) {
@@ -53,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     loadUser();
-  }, []);
+  }, [router]);
 
   const handleSignIn = async (email: string, password: string) => {
     try {
@@ -61,9 +71,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userProfile = await signIn(email, password);
       setUser(userProfile);
       router.push('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing in:', error);
-      setError('Email ou mot de passe incorrect');
+      
+      // Gérer les différents types d'erreurs de manière plus précise
+      if (error.code === 'auth/invalid-login-credentials' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        setError('Email ou mot de passe incorrect');
+      } else if (error.code === 'auth/too-many-requests') {
+        setError('Trop de tentatives de connexion. Veuillez réessayer plus tard ou réinitialiser votre mot de passe.');
+      } else if (error.code === 'auth/network-request-failed') {
+        setError('Problème de connexion réseau. Veuillez vérifier votre connexion Internet.');
+      } else {
+        setError('Erreur lors de la connexion. Veuillez réessayer.');
+      }
     }
   };
 

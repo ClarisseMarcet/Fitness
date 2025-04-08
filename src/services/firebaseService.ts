@@ -6,7 +6,9 @@ import {
   signOut,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -133,8 +135,26 @@ export const signIn = async (email: string, password: string): Promise<UserProfi
 export const signInWithGoogle = async (): Promise<UserProfile> => {
   try {
     const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    const user = userCredential.user;
+    await signInWithRedirect(auth, provider);
+    
+    // Note: Cette partie du code ne sera jamais exécutée immédiatement après le redirect
+    // Le résultat de la redirection sera traité lors du rechargement de la page
+    
+    // Ce code sert de placeholder pour TypeScript
+    return {} as UserProfile;
+  } catch (error) {
+    console.error('Error signing in with Google:', error);
+    throw error;
+  }
+};
+
+export const handleRedirectResult = async (): Promise<UserProfile | null> => {
+  try {
+    const result = await getRedirectResult(auth);
+    
+    if (!result) return null;
+    
+    const user = result.user;
     
     // Check if user profile exists
     const userDoc = await getDoc(doc(db, 'users', user.uid));
@@ -156,7 +176,7 @@ export const signInWithGoogle = async (): Promise<UserProfile> => {
       return userProfile;
     }
   } catch (error) {
-    console.error('Error signing in with Google:', error);
+    console.error('Error handling redirect result:', error);
     throw error;
   }
 };
