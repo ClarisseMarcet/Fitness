@@ -12,15 +12,27 @@ export default function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
   const { signUp, signInWithGoogle, error } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Vérifier la correspondance des mots de passe
     if (password !== confirmPassword) {
-      alert('Les mots de passe ne correspondent pas');
+      setPasswordError('Les mots de passe ne correspondent pas');
+      return;
+    } else {
+      setPasswordError('');
+    }
+    
+    // Vérifier la longueur du mot de passe
+    if (password.length < 6) {
+      setPasswordError('Le mot de passe doit contenir au moins 6 caractères');
       return;
     }
+    
     setLoading(true);
     try {
       await signUp(email, password, displayName);
@@ -29,6 +41,15 @@ export default function RegisterForm() {
       console.error('Error signing up:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Valider les mots de passe lors de la saisie
+  const validatePasswords = () => {
+    if (confirmPassword && password !== confirmPassword) {
+      setPasswordError('Les mots de passe ne correspondent pas');
+    } else {
+      setPasswordError('');
     }
   };
 
@@ -54,6 +75,35 @@ export default function RegisterForm() {
             connectez-vous à votre compte
           </Link>
         </p>
+      </div>
+
+      {/* Alerte sur les cookies tiers */}
+      <div className="p-3 text-sm text-blue-700 bg-blue-50 rounded-md">
+        <p className="font-medium">Problèmes de connexion</p>
+        <p>Certains navigateurs ou configurations peuvent bloquer les inscriptions pour les raisons suivantes :</p>
+        <ul className="ml-4 mt-1 list-disc">
+          <li>Blocage des cookies tiers par Chrome</li>
+          <li>Politiques de sécurité des agents utilisateurs (erreur 403)</li>
+          <li>Paramètres de confidentialité restrictifs</li>
+        </ul>
+        <p className="mt-1">Solutions recommandées :</p>
+        <ul className="ml-4 mt-1 list-disc">
+          <li>Essayez l'<strong>inscription avec Google</strong> (mode popup)</li>
+          <li>Utilisez un autre navigateur (Firefox, Edge, Safari)</li>
+          <li>Désactivez temporairement les extensions de blocage</li>
+          <li>
+            <a 
+              href="#" 
+              className="underline"
+              onClick={(e) => {
+                e.preventDefault();
+                alert("Pour ajuster vos paramètres :\n\n1. Cookies tiers :\n   - Chrome : chrome://settings/cookies\n   - Firefox : about:preferences#privacy\n\n2. Si vous avez l'erreur 403 (agent utilisateur) :\n   - Essayez un autre appareil\n   - Utilisez un autre navigateur\n   - Désactivez les extensions VPN ou proxy");
+              }}
+            >
+              Voir les instructions détaillées
+            </a>
+          </li>
+        </ul>
       </div>
 
       <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -101,9 +151,15 @@ export default function RegisterForm() {
               autoComplete="new-password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (confirmPassword) validatePasswords();
+              }}
               className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
             />
+            {password && password.length < 6 && (
+              <p className="mt-1 text-xs text-amber-600">Le mot de passe doit contenir au moins 6 caractères</p>
+            )}
           </div>
 
           <div>
@@ -117,11 +173,22 @@ export default function RegisterForm() {
               autoComplete="new-password"
               required
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (e.target.value) validatePasswords();
+              }}
+              className={`block w-full px-3 py-2 mt-1 border rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 ${
+                passwordError ? 'border-red-500' : 'border-gray-300'
+              }`}
             />
           </div>
         </div>
+
+        {passwordError && (
+          <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
+            {passwordError}
+          </div>
+        )}
 
         {error && (
           <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">

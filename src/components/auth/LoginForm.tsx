@@ -50,6 +50,34 @@ export default function LoginForm() {
         </p>
       </div>
 
+      <div className="p-3 text-sm text-blue-700 bg-blue-50 rounded-md">
+        <p className="font-medium">Problèmes de connexion</p>
+        <p>Certains navigateurs ou configurations peuvent bloquer les connexions pour les raisons suivantes :</p>
+        <ul className="ml-4 mt-1 list-disc">
+          <li>Blocage des cookies tiers par Chrome</li>
+          <li>Politiques de sécurité des agents utilisateurs (erreur 403)</li>
+          <li>Paramètres de confidentialité restrictifs</li>
+        </ul>
+        <p className="mt-1">Solutions recommandées :</p>
+        <ul className="ml-4 mt-1 list-disc">
+          <li>Essayez la <strong>connexion avec Google</strong> (mode popup)</li>
+          <li>Utilisez un autre navigateur (Firefox, Edge, Safari)</li>
+          <li>Désactivez temporairement les extensions de blocage</li>
+          <li>
+            <a 
+              href="#" 
+              className="underline"
+              onClick={(e) => {
+                e.preventDefault();
+                alert("Pour ajuster vos paramètres :\n\n1. Cookies tiers :\n   - Chrome : chrome://settings/cookies\n   - Firefox : about:preferences#privacy\n\n2. Si vous avez l'erreur 403 (agent utilisateur) :\n   - Essayez un autre appareil\n   - Utilisez un autre navigateur\n   - Désactivez les extensions VPN ou proxy");
+              }}
+            >
+              Voir les instructions détaillées
+            </a>
+          </li>
+        </ul>
+      </div>
+
       <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-4">
           <div>

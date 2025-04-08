@@ -81,8 +81,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError('Trop de tentatives de connexion. Veuillez réessayer plus tard ou réinitialiser votre mot de passe.');
       } else if (error.code === 'auth/network-request-failed') {
         setError('Problème de connexion réseau. Veuillez vérifier votre connexion Internet.');
+      } else if (error.code === 'auth/cookies-blocked') {
+        setError('Les cookies tiers sont bloqués par votre navigateur. Pour vous connecter, veuillez les activer ou utiliser un autre navigateur.');
+      } else if (error.message?.includes('third-party cookies') || error.message?.includes('third party cookies')) {
+        setError('Les cookies tiers semblent bloqués. Veuillez vérifier les paramètres de votre navigateur ou utiliser la connexion avec Google.');
       } else {
-        setError('Erreur lors de la connexion. Veuillez réessayer.');
+        setError('Erreur lors de la connexion. Veuillez réessayer. Si le problème persiste, vérifiez les paramètres de cookies de votre navigateur.');
       }
     }
   };
@@ -93,9 +97,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userProfile = await signUp(email, password, displayName);
       setUser(userProfile);
       router.push('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing up:', error);
-      setError('Erreur lors de la création du compte');
+      
+      // Gérer les différents types d'erreurs d'inscription
+      if (error.code === 'auth/email-already-in-use') {
+        setError('Cette adresse email est déjà utilisée. Veuillez vous connecter ou utiliser une autre adresse.');
+      } else if (error.code === 'auth/weak-password') {
+        setError('Le mot de passe est trop faible. Utilisez au moins 6 caractères.');
+      } else if (error.code === 'auth/invalid-email') {
+        setError('L\'adresse email n\'est pas valide.');
+      } else if (error.code === 'auth/network-request-failed') {
+        setError('Problème de connexion réseau. Veuillez vérifier votre connexion Internet.');
+      } else {
+        setError('Erreur lors de la création du compte. Veuillez réessayer.');
+      }
     }
   };
 
@@ -105,9 +121,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userProfile = await signInWithGoogle();
       setUser(userProfile);
       router.push('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error signing in with Google:', error);
-      setError('Erreur lors de la connexion avec Google');
+      if (error.code === 'auth/popup-blocked') {
+        setError('La fenêtre pop-up a été bloquée. Veuillez autoriser les pop-ups pour ce site.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        setError('Vous avez fermé la fenêtre de connexion avant de terminer.');
+      } else if (error.code === 'auth/cancelled-popup-request') {
+        // Cette erreur est normale lorsque plusieurs popups sont demandés, pas besoin d'afficher d'erreur
+        return;
+      } else if (error.code === 'auth/network-request-failed') {
+        setError('Problème de connexion réseau. Veuillez vérifier votre connexion Internet.');
+      } else if (error.message?.includes('third-party cookies') || error.message?.includes('third party cookies')) {
+        setError('Les cookies tiers semblent bloqués. Veuillez vérifier les paramètres de votre navigateur.');
+      } else if (error.code === 'auth/user-agent-rejected' || error.code === 'auth/unauthorized-domain' || 
+                 error.message?.includes('403') || error.message?.includes('forbidden') || 
+                 error.message?.includes('disallow') || error.message?.includes('user agent')) {
+        setError('Votre navigateur a été bloqué par les politiques de sécurité Google (erreur 403). Veuillez essayer un autre navigateur ou appareil.');
+      } else {
+        setError('Erreur lors de la connexion avec Google. Veuillez réessayer.');
+      }
     }
   };
 

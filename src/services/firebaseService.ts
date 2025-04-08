@@ -135,13 +135,26 @@ export const signIn = async (email: string, password: string): Promise<UserProfi
 export const signInWithGoogle = async (): Promise<UserProfile> => {
   try {
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
     
-    // Note: Cette partie du code ne sera jamais exécutée immédiatement après le redirect
-    // Le résultat de la redirection sera traité lors du rechargement de la page
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
     
-    // Ce code sert de placeholder pour TypeScript
-    return {} as UserProfile;
+    if (userDoc.exists()) {
+      return userDoc.data() as UserProfile;
+    } else {
+      const userProfile: UserProfile = {
+        uid: user.uid,
+        displayName: user.displayName || 'User',
+        email: user.email!,
+        photoURL: user.photoURL || undefined,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      await setDoc(doc(db, 'users', user.uid), userProfile);
+      return userProfile;
+    }
   } catch (error) {
     console.error('Error signing in with Google:', error);
     throw error;
