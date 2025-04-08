@@ -5,7 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  User as FirebaseUser
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -22,12 +23,12 @@ import {
 
 // Configuration Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyAObgaDJ5qBSWd5t40Rx4GHOYPZD2C4sNY",
-  authDomain: "coach-ia-app.firebaseapp.com",
-  projectId: "coach-ia-app",
-  storageBucket: "coach-ia-app.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef1234567890"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
 // Initialiser Firebase
@@ -38,9 +39,11 @@ const db = getFirestore(app);
 // Types
 export interface UserProfile {
   uid: string;
-  email: string;
   displayName: string;
+  email: string;
+  photoURL?: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface HealthMetrics {
@@ -48,31 +51,31 @@ export interface HealthMetrics {
   height: number;
   age: number;
   gender: 'male' | 'female';
-  activityLevel: string;
-  goal: 'loss' | 'gain' | 'maintain';
+  activityLevel: 'sedentary' | 'light' | 'moderate' | 'very' | 'extra';
+  goal?: 'loss' | 'maintain' | 'gain';
 }
 
 export interface HealthResults {
   bmi: number;
-  bmiStatus: string;
   bmr: number;
   tdee: number;
   targetCalories: number;
+  bmiStatus?: string;
 }
 
 export interface HealthRecommendations {
-  diet: string;
-  exercise: string;
-  lifestyle: string;
+  diet: string[];
+  exercise: string[];
+  lifestyle: string[];
 }
 
 export interface HealthRecord {
   id: string;
   userId: string;
-  date: Date;
   metrics: HealthMetrics;
   results: HealthResults;
-  recommendations?: HealthRecommendations;
+  recommendations: HealthRecommendations;
+  createdAt: Date;
 }
 
 // Fonctions d'authentification
@@ -80,14 +83,16 @@ export const signUp = async (email: string, password: string, displayName: strin
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-
+    
     const userProfile: UserProfile = {
       uid: user.uid,
-      email: user.email!,
       displayName,
-      createdAt: new Date()
+      email: user.email!,
+      photoURL: user.photoURL || undefined,
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
-
+    
     await setDoc(doc(db, 'users', user.uid), userProfile);
     return userProfile;
   } catch (error) {
@@ -96,12 +101,62 @@ export const signUp = async (email: string, password: string, displayName: strin
   }
 };
 
-export const signIn = async (email: string, password: string): Promise<FirebaseUser> => {
+export const signIn = async (email: string, password: string): Promise<UserProfile> => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
+    const user = userCredential.user;
+    
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    
+    if (userDoc.exists()) {
+      return userDoc.data() as UserProfile;
+    } else {
+      // Si le profil n'existe pas encore, on le crée ici
+      const userProfile: UserProfile = {
+        uid: user.uid,
+        displayName: user.displayName || 'User',
+        email: user.email!,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      await setDoc(doc(db, 'users', user.uid), userProfile);
+      return userProfile;
+    }
   } catch (error) {
     console.error('Error signing in:', error);
+    throw error;
+  }
+};
+
+
+export const signInWithGoogle = async (): Promise<UserProfile> => {
+  try {
+    const provider = new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    const user = userCredential.user;
+    
+    // Check if user profile exists
+    const userDoc = await getDoc(doc(db, 'users', user.uid));
+    
+    if (userDoc.exists()) {
+      return userDoc.data() as UserProfile;
+    } else {
+      // Create new user profile
+      const userProfile: UserProfile = {
+        uid: user.uid,
+        displayName: user.displayName || 'User',
+        email: user.email!,
+        photoURL: user.photoURL || undefined,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      await setDoc(doc(db, 'users', user.uid), userProfile);
+      return userProfile;
+    }
+  } catch (error) {
+    console.error('Error signing in with Google:', error);
     throw error;
   }
 };
@@ -115,57 +170,70 @@ export const logOut = async (): Promise<void> => {
   }
 };
 
-export const getCurrentUser = (): Promise<FirebaseUser | null> => {
+export const getCurrentUser = (): Promise<UserProfile | null> => {
   return new Promise((resolve, reject) => {
-    const unsubscribe = onAuthStateChanged(auth, 
-      (user) => {
-        unsubscribe();
-        resolve(user);
-      },
-      reject
-    );
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      unsubscribe();
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', user.uid));
+          if (userDoc.exists()) {
+            resolve(userDoc.data() as UserProfile);
+          } else {
+            resolve(null);
+          }
+        } catch (error) {
+          console.error('Error getting current user:', error);
+          reject(error);
+        }
+      } else {
+        resolve(null);
+      }
+    });
   });
 };
 
 // Fonctions pour les données de santé
-export const saveHealthRecord = async (record: Omit<HealthRecord, 'id'>): Promise<string> => {
+export const saveHealthRecord = async (userId: string, record: Omit<HealthRecord, 'id' | 'userId' | 'createdAt'>): Promise<string> => {
   try {
-    const healthRecordsRef = collection(db, 'healthRecords');
-    const newRecord = {
+    const healthRecord: HealthRecord = {
       ...record,
-      date: Timestamp.fromDate(record.date)
+      id: crypto.randomUUID(),
+      userId,
+      createdAt: new Date()
     };
     
-    const docRef = await setDoc(doc(healthRecordsRef), newRecord);
-    return docRef.id;
+    await setDoc(doc(db, 'healthRecords', healthRecord.id), healthRecord);
+    return healthRecord.id;
   } catch (error) {
     console.error('Error saving health record:', error);
     throw error;
   }
 };
 
-export const getUserHealthRecords = async (userId?: string): Promise<HealthRecord[]> => {
+export const getUserHealthRecords = async (userId?: string) => {
   try {
-    const currentUser = userId || auth.currentUser?.uid;
-    if (!currentUser) {
-      throw new Error('No user ID provided');
+    const currentUser = auth.currentUser;
+    const targetUserId = userId || currentUser?.uid;
+    
+    if (!targetUserId) {
+      throw new Error('Utilisateur non authentifié');
     }
 
     const healthRecordsRef = collection(db, 'healthRecords');
     const q = query(
-      healthRecordsRef,
-      where('userId', '==', currentUser),
-      orderBy('date', 'desc')
+      healthRecordsRef, 
+      where('userId', '==', targetUserId),
+      orderBy('createdAt', 'desc')
     );
-
     const querySnapshot = await getDocs(q);
+    
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
-      ...doc.data(),
-      date: doc.data().date.toDate()
+      ...doc.data()
     })) as HealthRecord[];
   } catch (error) {
-    console.error('Error getting health records:', error);
+    console.error('Error getting user health records:', error);
     throw error;
   }
 };

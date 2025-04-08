@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
 export const Navbar: React.FC = () => {
-  const { user, userProfile, logout } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -70,7 +70,7 @@ export const Navbar: React.FC = () => {
               <div className="ml-3 relative">
                 <div className="flex items-center">
                   <span className="text-gray-700 mr-4">
-                    {userProfile?.displayName || user.email}
+                    {user.displayName || user.email}
                   </span>
                   <button
                     onClick={handleLogout}
@@ -159,7 +159,7 @@ export const Navbar: React.FC = () => {
             {user ? (
               <div className="px-4">
                 <div className="text-base font-medium text-gray-800">
-                  {userProfile?.displayName || user.email}
+                  {user.displayName || user.email}
                 </div>
                 <button
                   onClick={handleLogout}

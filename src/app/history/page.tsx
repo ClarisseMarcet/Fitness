@@ -5,6 +5,7 @@ import { MainLayout } from '../../components/layout/MainLayout';
 import { getUserHealthRecords, HealthRecord } from '../../services/firebaseService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { Icon } from '@iconify/react';
 
 export default function HistoryPage() {
   const [records, setRecords] = useState<HealthRecord[]>([]);
@@ -23,9 +24,7 @@ export default function HistoryPage() {
       try {
         setLoading(true);
         const userRecords = await getUserHealthRecords();
-        setRecords(userRecords.sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        ));
+        setRecords(userRecords);
       } catch (err) {
         console.error('Erreur lors de la récupération des données:', err);
         setError('Impossible de charger l\'historique. Veuillez réessayer.');
@@ -76,20 +75,20 @@ export default function HistoryPage() {
               <div key={record.id} className="bg-white p-6 rounded-lg shadow-md">
                 <div className="flex justify-between items-start mb-4">
                   <h2 className="text-xl font-semibold">
-                    Calcul du {formatDate(record.date)}
+                    Calcul du {formatDate(record.createdAt)}
                   </h2>
                   <span className={`px-3 py-1 rounded-full text-sm ${
-                    record.metrics.goal === 'loss' 
+                    record.metrics.activityLevel === 'sedentary' 
                       ? 'bg-red-100 text-red-800' 
-                      : record.metrics.goal === 'gain' 
-                        ? 'bg-green-100 text-green-800' 
+                      : record.metrics.activityLevel === 'extra'
+                        ? 'bg-green-100 text-green-800'
                         : 'bg-blue-100 text-blue-800'
                   }`}>
-                    {record.metrics.goal === 'loss' 
-                      ? 'Perte de poids' 
-                      : record.metrics.goal === 'gain' 
-                        ? 'Prise de poids' 
-                        : 'Maintien'}
+                    {record.metrics.activityLevel === 'sedentary' 
+                      ? 'Sédentaire' 
+                      : record.metrics.activityLevel === 'extra'
+                        ? 'Très actif'
+                        : 'Modérément actif'}
                   </span>
                 </div>
                 
@@ -101,14 +100,20 @@ export default function HistoryPage() {
                       <li>Taille: {record.metrics.height} cm</li>
                       <li>Âge: {record.metrics.age} ans</li>
                       <li>Genre: {record.metrics.gender === 'male' ? 'Homme' : 'Femme'}</li>
-                      <li>Niveau d'activité: {record.metrics.activityLevel}</li>
+                      <li>Niveau d'activité: {
+                        record.metrics.activityLevel === 'sedentary' ? 'Sédentaire' :
+                        record.metrics.activityLevel === 'light' ? 'Légèrement actif' :
+                        record.metrics.activityLevel === 'moderate' ? 'Modérément actif' :
+                        record.metrics.activityLevel === 'very' ? 'Très actif' :
+                        'Extrêmement actif'
+                      }</li>
                     </ul>
                   </div>
                   
                   <div>
                     <h3 className="font-medium mb-2">Résultats</h3>
                     <ul className="space-y-1 text-gray-600">
-                      <li>IMC: {record.results.bmi.toFixed(1)} ({record.results.bmiStatus})</li>
+                      <li>IMC: {record.results.bmi.toFixed(1)}</li>
                       <li>Métabolisme de base: {Math.round(record.results.bmr)} calories/jour</li>
                       <li>Besoins caloriques: {Math.round(record.results.tdee)} calories/jour</li>
                       <li>Objectif calorique: {Math.round(record.results.targetCalories)} calories/jour</li>
@@ -122,15 +127,27 @@ export default function HistoryPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="p-3 bg-gray-50 rounded">
                         <h4 className="font-medium text-sm mb-1">Alimentation</h4>
-                        <p className="text-sm text-gray-600 line-clamp-3">{record.recommendations.diet}</p>
+                        <ul className="text-sm text-gray-600">
+                          {record.recommendations.diet.map((rec, index) => (
+                            <li key={index} className="mb-1">• {rec}</li>
+                          ))}
+                        </ul>
                       </div>
                       <div className="p-3 bg-gray-50 rounded">
                         <h4 className="font-medium text-sm mb-1">Exercice</h4>
-                        <p className="text-sm text-gray-600 line-clamp-3">{record.recommendations.exercise}</p>
+                        <ul className="text-sm text-gray-600">
+                          {record.recommendations.exercise.map((rec, index) => (
+                            <li key={index} className="mb-1">• {rec}</li>
+                          ))}
+                        </ul>
                       </div>
                       <div className="p-3 bg-gray-50 rounded">
                         <h4 className="font-medium text-sm mb-1">Mode de vie</h4>
-                        <p className="text-sm text-gray-600 line-clamp-3">{record.recommendations.lifestyle}</p>
+                        <ul className="text-sm text-gray-600">
+                          {record.recommendations.lifestyle.map((rec, index) => (
+                            <li key={index} className="mb-1">• {rec}</li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   </div>

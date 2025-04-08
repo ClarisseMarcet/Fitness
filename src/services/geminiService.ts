@@ -1,5 +1,5 @@
-const GEMINI_API_KEY = 'AIzaSyAObgaDJ5qBSWd5t40Rx4GHOYPZD2C4sNY';
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_API_URL = process.env.NEXT_PUBLIC_GEMINI_API_URL;
+const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
 export interface HealthRecommendation {
   diet: string;
@@ -54,9 +54,9 @@ export const getHealthRecommendations = async (
     // Parse the recommendation into structured data
     const sections = recommendation.split('\n\n');
     return {
-      diet: sections.find(s => s.toLowerCase().includes('alimentation')) || '',
-      exercise: sections.find(s => s.toLowerCase().includes('exercice')) || '',
-      lifestyle: sections.find(s => s.toLowerCase().includes('mode de vie')) || ''
+      diet: sections.find((s: string) => s.toLowerCase().includes('alimentation')) || '',
+      exercise: sections.find((s: string) => s.toLowerCase().includes('exercice')) || '',
+      lifestyle: sections.find((s: string) => s.toLowerCase().includes('mode de vie')) || ''
     };
   } catch (error) {
     console.error('Erreur lors de l\'appel à l\'API Gemini:', error);

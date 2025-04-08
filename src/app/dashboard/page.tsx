@@ -24,7 +24,7 @@ export default function DashboardPage() {
         setLoading(true);
         const userRecords = await getUserHealthRecords();
         setRecords(userRecords.sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         ));
       } catch (err) {
         console.error('Erreur lors de la récupération des données:', err);
@@ -108,7 +108,16 @@ export default function DashboardPage() {
                     getGoalStatus() === 'negative' ? 'text-red-600' : 
                     'text-gray-600'
                   }`}>
-                    {calculateProgress()?.weight > 0 ? '+' : ''}{calculateProgress()?.weight.toFixed(1)} kg depuis le dernier calcul
+                    {(() => {
+                      const progress = calculateProgress();
+                      if (!progress) return null;
+                      return (
+                        <>
+                          {progress.weight > 0 ? '+' : ''}
+                          {progress.weight.toFixed(1)} kg depuis le dernier calcul
+                        </>
+                      );
+                    })()}
                   </p>
                 )}
               </div>

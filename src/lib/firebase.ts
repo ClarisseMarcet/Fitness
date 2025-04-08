@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
+import { getFirestore, connectFirestoreEmulator, Firestore } from 'firebase/firestore';
 
 // Configuration Firebase
 const firebaseConfig = {
@@ -14,8 +14,8 @@ const firebaseConfig = {
 
 // Initialize Firebase
 let app;
-let auth;
-let db;
+let auth: Auth | undefined;
+let db: Firestore | undefined;
 
 try {
   app = initializeApp(firebaseConfig);
@@ -27,8 +27,8 @@ try {
 
 // Activer les émulateurs en développement si nécessaire
 if (process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
-  connectAuthEmulator(auth, 'http://localhost:9099');
-  connectFirestoreEmulator(db, 'localhost', 8080);
+  if (auth) connectAuthEmulator(auth, 'http://localhost:9099');
+  if (db) connectFirestoreEmulator(db, 'localhost', 8080);
 }
 
 export { app, auth, db }; 

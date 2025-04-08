@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
-import { RegisterForm } from '../../components/auth/RegisterForm';
+import RegisterForm from "../../components/auth/RegisterForm";
 import Link from 'next/link';
 
 export default function RegisterPage() {
@@ -20,7 +20,7 @@ export default function RegisterPage() {
                 href="/login" 
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
-                connectez-vous à votre compte existant
+                connectez-vous à votre compte
               </Link>
             </p>
           </div>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
-import { HealthCalculator } from '../../components/HealthCalculator';
+import HealthCalculator from '../../components/HealthCalculator';
 import { useAuth } from '../../contexts/AuthContext';
 import Link from 'next/link';
 
@@ -13,10 +13,7 @@ export default function CalculatorPage() {
     <MainLayout>
       <div className="max-w-4xl mx-auto p-6">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-4">Calculateur de Santé</h1>
-          <p className="text-gray-600">
-            Entrez vos informations pour obtenir des calculs personnalisés et des recommandations adaptées à vos objectifs.
-          </p>
+          
         </div>
 
         {user ? (

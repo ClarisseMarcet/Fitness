@@ -15,8 +15,8 @@ export default function Header() {
           <Link href="/dashboard" className="hover:text-blue-600">
             Dashboard
           </Link>
-          <Link href="/train" className="hover:text-blue-600">
-            Entraînement
+          <Link href="/calculator" className="hover:text-blue-600">
+            Calculateur
           </Link>
           <button 
             onClick={() => {/* TODO: Implémenter la déconnexion */}}

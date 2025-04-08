@@ -15,6 +15,7 @@ const nextConfig = {
     };
     return config;
   },
+  transpilePackages: ['undici', 'firebase']
 };
 
 module.exports = nextConfig; 
