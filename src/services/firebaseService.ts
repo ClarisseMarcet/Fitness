@@ -8,7 +8,10 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult
+  getRedirectResult,
+  browserSessionPersistence,
+  browserLocalPersistence,
+  setPersistence
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -105,6 +108,20 @@ export const signUp = async (email: string, password: string, displayName: strin
 
 export const signIn = async (email: string, password: string): Promise<UserProfile> => {
   try {
+    // Essayer d'abord avec la persistance locale (plus compatible)
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+    } catch (persistenceError) {
+      console.warn('Could not set local persistence, trying session persistence:', persistenceError);
+      // Si la persistance locale échoue, essayer la persistance de session (moins de problèmes avec les restrictions de cookies)
+      try {
+        await setPersistence(auth, browserSessionPersistence);
+      } catch (sessionError) {
+        console.warn('Could not set session persistence either, continuing with default:', sessionError);
+        // Continuer avec la persistance par défaut si les deux échouent
+      }
+    }
+    
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
@@ -125,9 +142,44 @@ export const signIn = async (email: string, password: string): Promise<UserProfi
       await setDoc(doc(db, 'users', user.uid), userProfile);
       return userProfile;
     }
-  } catch (error) {
-    console.error('Error signing in:', error);
-    throw error;
+  } catch (initialError: any) {
+    // Si l'erreur est liée aux cookies tiers ou à un problème de connexion
+    if (initialError.code === 'auth/invalid-login-credentials' ||
+        initialError.message?.includes('cookies') ||
+        initialError.message?.includes('third-party')) {
+      
+      console.warn('Initial sign-in failed, trying with different approach:', initialError);
+      
+      try {
+        // Essayer avec la persistance de session uniquement
+        await setPersistence(auth, browserSessionPersistence);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        
+        if (userDoc.exists()) {
+          return userDoc.data() as UserProfile;
+        } else {
+          const userProfile: UserProfile = {
+            uid: user.uid,
+            displayName: user.displayName || 'User',
+            email: user.email!,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+          
+          await setDoc(doc(db, 'users', user.uid), userProfile);
+          return userProfile;
+        }
+      } catch (retryError) {
+        console.error('Both sign-in attempts failed:', retryError);
+        throw initialError; // Renvoyer l'erreur initiale pour la cohérence
+      }
+    }
+    
+    console.error('Error signing in:', initialError);
+    throw initialError;
   }
 };
 

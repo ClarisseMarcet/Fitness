@@ -83,21 +83,22 @@ export default function RegisterForm() {
         <p>Certains navigateurs ou configurations peuvent bloquer les inscriptions pour les raisons suivantes :</p>
         <ul className="ml-4 mt-1 list-disc">
           <li>Blocage des cookies tiers par Chrome</li>
+          <li>Politiques de sécurité cross-origin (COOP)</li>
           <li>Politiques de sécurité des agents utilisateurs (erreur 403)</li>
           <li>Paramètres de confidentialité restrictifs</li>
         </ul>
         <p className="mt-1">Solutions recommandées :</p>
         <ul className="ml-4 mt-1 list-disc">
-          <li>Essayez l'<strong>inscription avec Google</strong> (mode popup)</li>
-          <li>Utilisez un autre navigateur (Firefox, Edge, Safari)</li>
-          <li>Désactivez temporairement les extensions de blocage</li>
+          <li>Essayez un autre navigateur comme Firefox ou Edge</li>
+          <li>Utilisez le mode navigation privée/incognito</li>
+          <li>Désactivez temporairement les extensions de protection</li>
           <li>
             <a 
               href="#" 
               className="underline"
               onClick={(e) => {
                 e.preventDefault();
-                alert("Pour ajuster vos paramètres :\n\n1. Cookies tiers :\n   - Chrome : chrome://settings/cookies\n   - Firefox : about:preferences#privacy\n\n2. Si vous avez l'erreur 403 (agent utilisateur) :\n   - Essayez un autre appareil\n   - Utilisez un autre navigateur\n   - Désactivez les extensions VPN ou proxy");
+                alert("Pour résoudre les problèmes d'authentification :\n\n1. Cookies tiers :\n   - Chrome : chrome://settings/cookies\n   - Firefox : about:preferences#privacy\n\n2. Politique COOP (Cross-Origin) :\n   - Désactivez la protection renforcée contre le tracking\n   - Utilisez le mode navigation privée\n   - Essayez un autre navigateur\n\n3. Erreur 403 (agent utilisateur) :\n   - Essayez un autre appareil\n   - Utilisez un autre navigateur\n   - Désactivez les extensions VPN ou proxy");
               }}
             >
               Voir les instructions détaillées

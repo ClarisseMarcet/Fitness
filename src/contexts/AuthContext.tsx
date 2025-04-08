@@ -75,7 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error signing in:', error);
       
       // Gérer les différents types d'erreurs de manière plus précise
-      if (error.code === 'auth/invalid-login-credentials' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+      if (error.code === 'auth/invalid-login-credentials') {
+        setError('Email ou mot de passe incorrect. Note: Cette erreur peut aussi être liée aux paramètres de cookies de Chrome. Essayez un autre navigateur ou le mode incognito.');
+      } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         setError('Email ou mot de passe incorrect');
       } else if (error.code === 'auth/too-many-requests') {
         setError('Trop de tentatives de connexion. Veuillez réessayer plus tard ou réinitialiser votre mot de passe.');
@@ -85,6 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError('Les cookies tiers sont bloqués par votre navigateur. Pour vous connecter, veuillez les activer ou utiliser un autre navigateur.');
       } else if (error.message?.includes('third-party cookies') || error.message?.includes('third party cookies')) {
         setError('Les cookies tiers semblent bloqués. Veuillez vérifier les paramètres de votre navigateur ou utiliser la connexion avec Google.');
+      } else if (error.message?.includes('Cross-Origin-Opener-Policy') || error.message?.includes('COOP')) {
+        setError('Blocage de sécurité cross-origin détecté. Essayez un autre navigateur ou désactivez les fonctionnalités de protection renforcée.');
       } else {
         setError('Erreur lors de la connexion. Veuillez réessayer. Si le problème persiste, vérifiez les paramètres de cookies de votre navigateur.');
       }
