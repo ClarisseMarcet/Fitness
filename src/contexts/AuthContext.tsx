@@ -76,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Gérer les différents types d'erreurs de manière plus précise
       if (error.code === 'auth/invalid-login-credentials') {
-        setError('Email ou mot de passe incorrect. Note: Cette erreur peut aussi être liée aux paramètres de cookies de Chrome. Essayez un autre navigateur ou le mode incognito.');
+        setError('Email ou mot de passe incorrect. Si vous êtes sûr de vos identifiants, essayez de vous connecter avec Google ou utilisez le mode incognito.');
       } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         setError('Email ou mot de passe incorrect');
       } else if (error.code === 'auth/too-many-requests') {
@@ -113,6 +113,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError('L\'adresse email n\'est pas valide.');
       } else if (error.code === 'auth/network-request-failed') {
         setError('Problème de connexion réseau. Veuillez vérifier votre connexion Internet.');
+      } else if (error.message?.includes('invalid data') || error.message?.includes('Unsupported field value')) {
+        setError('Erreur lors de la création du profil. Veuillez réessayer avec des informations valides.');
       } else {
         setError('Erreur lors de la création du compte. Veuillez réessayer.');
       }

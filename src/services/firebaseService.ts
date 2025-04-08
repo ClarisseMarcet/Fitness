@@ -89,14 +89,19 @@ export const signUp = async (email: string, password: string, displayName: strin
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
+    // Créer un profil utilisateur sans le champ photoURL s'il n'existe pas
     const userProfile: UserProfile = {
       uid: user.uid,
       displayName,
       email: user.email!,
-      photoURL: user.photoURL || undefined,
       createdAt: new Date(),
       updatedAt: new Date()
     };
+    
+    // Ne pas inclure photoURL s'il n'existe pas
+    if (user.photoURL) {
+      userProfile.photoURL = user.photoURL;
+    }
     
     await setDoc(doc(db, 'users', user.uid), userProfile);
     return userProfile;
@@ -108,28 +113,41 @@ export const signUp = async (email: string, password: string, displayName: strin
 
 export const signIn = async (email: string, password: string): Promise<UserProfile> => {
   try {
+    console.log('Tentative de connexion avec email:', email);
+    
     // Essayer d'abord avec la persistance locale (plus compatible)
     try {
+      console.log('Configuration de la persistance locale...');
       await setPersistence(auth, browserLocalPersistence);
+      console.log('Persistance locale configurée avec succès');
     } catch (persistenceError) {
-      console.warn('Could not set local persistence, trying session persistence:', persistenceError);
+      console.warn('Impossible de configurer la persistance locale:', persistenceError);
       // Si la persistance locale échoue, essayer la persistance de session (moins de problèmes avec les restrictions de cookies)
       try {
+        console.log('Tentative avec la persistance de session...');
         await setPersistence(auth, browserSessionPersistence);
+        console.log('Persistance de session configurée avec succès');
       } catch (sessionError) {
-        console.warn('Could not set session persistence either, continuing with default:', sessionError);
+        console.warn('Impossible de configurer la persistance de session:', sessionError);
+        console.log('Continuation avec la persistance par défaut');
         // Continuer avec la persistance par défaut si les deux échouent
       }
     }
     
+    console.log('Tentative de connexion avec Firebase Auth...');
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    console.log('Connexion Firebase Auth réussie, uid:', userCredential.user.uid);
+    
     const user = userCredential.user;
     
+    console.log('Récupération du profil utilisateur depuis Firestore...');
     const userDoc = await getDoc(doc(db, 'users', user.uid));
     
     if (userDoc.exists()) {
+      console.log('Profil utilisateur trouvé dans Firestore');
       return userDoc.data() as UserProfile;
     } else {
+      console.log('Profil utilisateur non trouvé, création d\'un nouveau profil');
       // Si le profil n'existe pas encore, on le crée ici
       const userProfile: UserProfile = {
         uid: user.uid,
@@ -139,28 +157,50 @@ export const signIn = async (email: string, password: string): Promise<UserProfi
         updatedAt: new Date()
       };
       
+      // Ne pas inclure photoURL s'il n'existe pas
+      if (user.photoURL) {
+        userProfile.photoURL = user.photoURL;
+      }
+      
+      console.log('Sauvegarde du nouveau profil utilisateur...');
       await setDoc(doc(db, 'users', user.uid), userProfile);
+      console.log('Profil utilisateur sauvegardé avec succès');
       return userProfile;
     }
   } catch (initialError: any) {
+    console.error('Erreur détaillée lors de la connexion:', {
+      code: initialError.code,
+      message: initialError.message,
+      stack: initialError.stack,
+      fullError: initialError
+    });
+    
     // Si l'erreur est liée aux cookies tiers ou à un problème de connexion
     if (initialError.code === 'auth/invalid-login-credentials' ||
         initialError.message?.includes('cookies') ||
         initialError.message?.includes('third-party')) {
       
-      console.warn('Initial sign-in failed, trying with different approach:', initialError);
+      console.warn('Échec de la connexion initiale, tentative avec une approche différente:', initialError);
       
       try {
         // Essayer avec la persistance de session uniquement
+        console.log('Tentative avec persistance de session uniquement...');
         await setPersistence(auth, browserSessionPersistence);
+        
+        console.log('Nouvelle tentative de connexion...');
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        console.log('Connexion réussie avec la deuxième tentative');
+        
         const user = userCredential.user;
         
+        console.log('Récupération du profil utilisateur depuis Firestore...');
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         
         if (userDoc.exists()) {
+          console.log('Profil utilisateur trouvé dans Firestore');
           return userDoc.data() as UserProfile;
         } else {
+          console.log('Profil utilisateur non trouvé, création d\'un nouveau profil');
           const userProfile: UserProfile = {
             uid: user.uid,
             displayName: user.displayName || 'User',
@@ -169,64 +209,116 @@ export const signIn = async (email: string, password: string): Promise<UserProfi
             updatedAt: new Date()
           };
           
+          // Ne pas inclure photoURL s'il n'existe pas
+          if (user.photoURL) {
+            userProfile.photoURL = user.photoURL;
+          }
+          
+          console.log('Sauvegarde du nouveau profil utilisateur...');
           await setDoc(doc(db, 'users', user.uid), userProfile);
+          console.log('Profil utilisateur sauvegardé avec succès');
           return userProfile;
         }
       } catch (retryError) {
-        console.error('Both sign-in attempts failed:', retryError);
+        console.error('Les deux tentatives de connexion ont échoué:', retryError);
         throw initialError; // Renvoyer l'erreur initiale pour la cohérence
       }
     }
     
-    console.error('Error signing in:', initialError);
+    console.error('Erreur lors de la connexion:', initialError);
     throw initialError;
   }
 };
 
-
 export const signInWithGoogle = async (): Promise<UserProfile> => {
   try {
+    console.log('Tentative de connexion avec Google...');
+    
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
+    // Ajouter des paramètres personnalisés pour améliorer la compatibilité
+    provider.setCustomParameters({
+      prompt: 'select_account',
+      // Forcer l'utilisation du mode popup pour éviter les problèmes de redirection
+      auth_type: 'popup'
+    });
     
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    
-    if (userDoc.exists()) {
-      return userDoc.data() as UserProfile;
-    } else {
-      const userProfile: UserProfile = {
-        uid: user.uid,
-        displayName: user.displayName || 'User',
-        email: user.email!,
-        photoURL: user.photoURL || undefined,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+    // Essayer d'abord avec signInWithRedirect
+    try {
+      console.log('Tentative de connexion avec redirection...');
+      await signInWithRedirect(auth, provider);
+      console.log('Redirection initiée avec succès');
+      // Note: Le résultat sera géré par handleRedirectResult
+      return {} as UserProfile; // Retour temporaire, le vrai profil sera géré par handleRedirectResult
+    } catch (redirectError) {
+      console.warn('Échec de la connexion par redirection, tentative avec popup:', redirectError);
       
-      await setDoc(doc(db, 'users', user.uid), userProfile);
-      return userProfile;
+      // Si la redirection échoue, essayer avec popup
+      console.log('Tentative de connexion avec popup...');
+      const result = await signInWithPopup(auth, provider);
+      console.log('Connexion popup réussie, uid:', result.user.uid);
+      
+      const user = result.user;
+      
+      console.log('Récupération du profil utilisateur depuis Firestore...');
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      
+      if (userDoc.exists()) {
+        console.log('Profil utilisateur trouvé dans Firestore');
+        return userDoc.data() as UserProfile;
+      } else {
+        console.log('Profil utilisateur non trouvé, création d\'un nouveau profil');
+        const userProfile: UserProfile = {
+          uid: user.uid,
+          displayName: user.displayName || 'User',
+          email: user.email!,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        };
+        
+        // Ne pas inclure photoURL s'il n'existe pas
+        if (user.photoURL) {
+          userProfile.photoURL = user.photoURL;
+        }
+        
+        console.log('Sauvegarde du nouveau profil utilisateur...');
+        await setDoc(doc(db, 'users', user.uid), userProfile);
+        console.log('Profil utilisateur sauvegardé avec succès');
+        return userProfile;
+      }
     }
-  } catch (error) {
-    console.error('Error signing in with Google:', error);
+  } catch (error: any) {
+    console.error('Erreur détaillée lors de la connexion avec Google:', {
+      code: error.code,
+      message: error.message,
+      stack: error.stack,
+      fullError: error
+    });
     throw error;
   }
 };
 
 export const handleRedirectResult = async (): Promise<UserProfile | null> => {
   try {
+    console.log('Vérification du résultat de redirection...');
     const result = await getRedirectResult(auth);
     
-    if (!result) return null;
+    if (!result) {
+      console.log('Aucun résultat de redirection trouvé');
+      return null;
+    }
     
+    console.log('Résultat de redirection trouvé, uid:', result.user.uid);
     const user = result.user;
     
     // Check if user profile exists
+    console.log('Récupération du profil utilisateur depuis Firestore...');
     const userDoc = await getDoc(doc(db, 'users', user.uid));
     
     if (userDoc.exists()) {
+      console.log('Profil utilisateur trouvé dans Firestore');
       return userDoc.data() as UserProfile;
     } else {
+      console.log('Profil utilisateur non trouvé, création d\'un nouveau profil');
       // Create new user profile
       const userProfile: UserProfile = {
         uid: user.uid,
@@ -237,11 +329,18 @@ export const handleRedirectResult = async (): Promise<UserProfile | null> => {
         updatedAt: new Date()
       };
       
+      console.log('Sauvegarde du nouveau profil utilisateur...');
       await setDoc(doc(db, 'users', user.uid), userProfile);
+      console.log('Profil utilisateur sauvegardé avec succès');
       return userProfile;
     }
-  } catch (error) {
-    console.error('Error handling redirect result:', error);
+  } catch (error: any) {
+    console.error('Erreur détaillée lors du traitement du résultat de redirection:', {
+      code: error.code,
+      message: error.message,
+      stack: error.stack,
+      fullError: error
+    });
     throw error;
   }
 };
