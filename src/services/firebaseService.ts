@@ -233,69 +233,28 @@ export const signIn = async (email: string, password: string): Promise<UserProfi
   }
 };
 
-export const signInWithGoogle = async (): Promise<UserProfile> => {
+export const signInWithGoogle = async (): Promise<void> => {
   try {
-    console.log('Tentative de connexion avec Google...');
-    
     const provider = new GoogleAuthProvider();
+    
     // Ajouter des paramètres personnalisés pour améliorer la compatibilité
     provider.setCustomParameters({
       prompt: 'select_account',
-      // Forcer l'utilisation du mode popup pour éviter les problèmes de redirection
-      auth_type: 'popup'
+      // Forcer l'utilisation de la redirection au lieu du popup pour éviter les problèmes de cookies tiers
+      auth_type: 'reauthenticate'
     });
     
-    // Essayer d'abord avec signInWithRedirect
+    // Essayer d'abord avec la redirection
     try {
-      console.log('Tentative de connexion avec redirection...');
       await signInWithRedirect(auth, provider);
-      console.log('Redirection initiée avec succès');
-      // Note: Le résultat sera géré par handleRedirectResult
-      return {} as UserProfile; // Retour temporaire, le vrai profil sera géré par handleRedirectResult
+      // La redirection sera gérée par handleRedirectResult
     } catch (redirectError) {
-      console.warn('Échec de la connexion par redirection, tentative avec popup:', redirectError);
-      
-      // Si la redirection échoue, essayer avec popup
-      console.log('Tentative de connexion avec popup...');
-      const result = await signInWithPopup(auth, provider);
-      console.log('Connexion popup réussie, uid:', result.user.uid);
-      
-      const user = result.user;
-      
-      console.log('Récupération du profil utilisateur depuis Firestore...');
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      
-      if (userDoc.exists()) {
-        console.log('Profil utilisateur trouvé dans Firestore');
-        return userDoc.data() as UserProfile;
-      } else {
-        console.log('Profil utilisateur non trouvé, création d\'un nouveau profil');
-        const userProfile: UserProfile = {
-          uid: user.uid,
-          displayName: user.displayName || 'User',
-          email: user.email!,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
-        
-        // Ne pas inclure photoURL s'il n'existe pas
-        if (user.photoURL) {
-          userProfile.photoURL = user.photoURL;
-        }
-        
-        console.log('Sauvegarde du nouveau profil utilisateur...');
-        await setDoc(doc(db, 'users', user.uid), userProfile);
-        console.log('Profil utilisateur sauvegardé avec succès');
-        return userProfile;
-      }
+      console.log('Redirection failed, falling back to popup', redirectError);
+      // En cas d'échec de la redirection, essayer avec le popup
+      await signInWithPopup(auth, provider);
     }
-  } catch (error: any) {
-    console.error('Erreur détaillée lors de la connexion avec Google:', {
-      code: error.code,
-      message: error.message,
-      stack: error.stack,
-      fullError: error
-    });
+  } catch (error) {
+    console.error('Error in signInWithGoogle:', error);
     throw error;
   }
 };

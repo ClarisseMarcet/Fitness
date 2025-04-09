@@ -125,26 +125,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleSignInWithGoogle = async () => {
     try {
       setError(null);
-      const userProfile = await signInWithGoogle();
-      setUser(userProfile);
-      router.push('/dashboard');
+      await signInWithGoogle();
+      // La redirection sera gérée par le useEffect qui détecte le résultat de redirection
     } catch (error: any) {
       console.error('Error signing in with Google:', error);
-      if (error.code === 'auth/popup-blocked') {
-        setError('La fenêtre pop-up a été bloquée. Veuillez autoriser les pop-ups pour ce site.');
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        setError('Vous avez fermé la fenêtre de connexion avant de terminer.');
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        setError('La fenêtre de connexion a été fermée. Veuillez réessayer.');
       } else if (error.code === 'auth/cancelled-popup-request') {
-        // Cette erreur est normale lorsque plusieurs popups sont demandés, pas besoin d'afficher d'erreur
-        return;
-      } else if (error.code === 'auth/network-request-failed') {
-        setError('Problème de connexion réseau. Veuillez vérifier votre connexion Internet.');
+        setError('La demande de connexion a été annulée. Veuillez réessayer.');
+      } else if (error.code === 'auth/popup-blocked') {
+        setError('La fenêtre de connexion a été bloquée. Veuillez autoriser les popups pour ce site.');
       } else if (error.message?.includes('third-party cookies') || error.message?.includes('third party cookies')) {
         setError('Les cookies tiers semblent bloqués. Veuillez vérifier les paramètres de votre navigateur.');
-      } else if (error.code === 'auth/user-agent-rejected' || error.code === 'auth/unauthorized-domain' || 
-                 error.message?.includes('403') || error.message?.includes('forbidden') || 
-                 error.message?.includes('disallow') || error.message?.includes('user agent')) {
-        setError('Votre navigateur a été bloqué par les politiques de sécurité Google (erreur 403). Veuillez essayer un autre navigateur ou appareil.');
       } else {
         setError('Erreur lors de la connexion avec Google. Veuillez réessayer.');
       }
