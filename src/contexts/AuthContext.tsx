@@ -125,8 +125,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleSignInWithGoogle = async () => {
     try {
       setError(null);
-      await signInWithGoogle();
-      // La redirection sera gérée par le useEffect qui détecte le résultat de redirection
+      const userProfile = await signInWithGoogle();
+      setUser(userProfile);
+      router.push('/dashboard');
     } catch (error: any) {
       console.error('Error signing in with Google:', error);
       

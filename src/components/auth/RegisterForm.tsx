@@ -22,7 +22,7 @@ export const RegisterForm = () => {
   const [showOTPInput, setShowOTPInput] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState<any>(null);
   const recaptchaVerifierRef = useRef<RecaptchaVerifier | null>(null);
-  const { handleSignUp } = useAuth();
+  const { handleSignUp, handleSignInWithGoogle } = useAuth();
   const router = useRouter();
   const auth = getAuth();
   const [phoneVerificationEnabled, setPhoneVerificationEnabled] = useState(false);
@@ -147,8 +147,8 @@ export const RegisterForm = () => {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await signInWithGoogle();
-      router.push('/dashboard');
+      await handleSignInWithGoogle();
+      // La redirection est maintenant gérée dans le contexte d'authentification
     } catch (error) {
       console.error('Error signing in with Google:', error);
     } finally {

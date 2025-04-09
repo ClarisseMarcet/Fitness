@@ -30,9 +30,6 @@ export default function LoginForm() {
     setLoading(true);
     try {
       await handleSignInWithGoogle();
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 1000);
     } catch (error) {
       console.error('Error signing in with Google:', error);
     } finally {
