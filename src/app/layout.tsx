@@ -7,6 +7,10 @@ export const metadata: Metadata = {
   description: "Calculez votre IMC, métabolisme et obtenez des recommandations personnalisées pour atteindre vos objectifs de santé.",
 };
 
+
+
+
+
 export default function RootLayout({
   children,
 }: Readonly<{

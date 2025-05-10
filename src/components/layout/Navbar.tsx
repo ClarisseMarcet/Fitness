@@ -10,15 +10,11 @@ export const Navbar: React.FC = () => {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  // Ajouter un effet pour détecter le défilement
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 10);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -34,182 +30,411 @@ export const Navbar: React.FC = () => {
     }
   };
 
+  const toggleDropdown = (menu: string) => {
+    setActiveDropdown(activeDropdown === menu ? null : menu);
+  };
+
+  const closeAll = () => {
+    setActiveDropdown(null);
+    setIsMenuOpen(false);
+  };
+
+  // Liens publics (toujours visibles)
+  const publicLinks = [
+    { href: "/", icon: "home", label: "Accueil" },
+    { href: "/contact", icon: "envelope", label: "Contact" }
+  ];
+
+  // Menus déroulants publics (toujours visibles)
+  const publicDropdowns = [
+    {
+      id: "activities",
+      title: "Activités",
+      icon: "running",
+      items: [
+        { href: "/entrainement", icon: "calendar-alt", label: "Séances" },
+        { href: "/exercices", icon: "book", label: "Bibliothèque" },
+        { href: "/FitnessDashboard", icon: "tachometer-alt", label: "Mon Espace" },
+        { href: "/StravaSyncButton", icon: "strava", brandIcon: true, label: "Activités Strava" }
+      ]
+    },
+  ];
+
+  // Liens protégés (seulement visibles quand connecté)
+  const protectedLinks = [
+    { href: "/dashboard", icon: "tachometer-alt", label: "Tableau de bord" },
+    { href: "/calculator", icon: "calculator", label: "Calculateur" },
+    { href: "/history", icon: "history", label: "Historique" },
+    { href: "/exercice", icon: "exercice", label: "Exercices" },
+    { href: "/strava", icon: "strava", brandIcon: true, label: "Strava" }
+  ];
+
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md' : 'bg-white/90 backdrop-blur-sm'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-xl font-bold text-blue-600">
-                CoachIA
+    <>
+      {/* Barre de navigation principale (toujours visible) */}
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md py-0' : 'bg-white/95 backdrop-blur-sm py-1'}`}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <div className="flex-shrink-0">
+              <Link href="/" className="flex items-center" onClick={closeAll}>
+                <span className="text-2xl font-bold text-blue-600">FitCoach</span>
+                <span className="text-2xl font-bold text-blue-400">IA</span>
               </Link>
             </div>
-            
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link 
-                href="/" 
-                className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-gray-300 transition-colors"
-              >
-                Accueil
-              </Link>
-              
-              {user && (
+
+            {/* Menu Desktop */}
+            <div className="hidden md:flex items-center space-x-1">
+              {/* Liens publics */}
+              {publicLinks.map((link) => (
+                <NavItem 
+                  key={link.href}
+                  href={link.href} 
+                  icon={link.icon} 
+                  onClick={closeAll}
+                >
+                  {link.label}
+                </NavItem>
+              ))}
+
+              {/* Menus déroulants publics */}
+              {publicDropdowns.map((dropdown) => (
+                <DropdownMenu 
+                  key={dropdown.id}
+                  title={dropdown.title}
+                  icon={dropdown.icon}
+                  isActive={activeDropdown === dropdown.id}
+                  onMouseEnter={() => setActiveDropdown(dropdown.id)}
+                  onMouseLeave={() => setActiveDropdown(null)}
+                  onClick={() => toggleDropdown(dropdown.id)}
+                >
+                  {dropdown.items.map((item) => (
+                    <DropdownItem 
+                      key={item.href}
+                      href={item.href}
+                      icon={item.icon}
+                      brandIcon={item.brandIcon}
+                      onClick={closeAll}
+                    >
+                      {item.label}
+                    </DropdownItem>
+                  ))}
+                </DropdownMenu>
+              ))}
+            </div>
+
+            {/* Actions utilisateur */}
+            <div className="hidden md:flex items-center ml-4 space-x-3">
+              {user ? (
+                <div className="text-sm font-medium text-gray-700 px-3 py-1 bg-gray-100 rounded-full">
+                  <i className="fas fa-user-circle mr-2 text-blue-500"></i>
+                  {user.displayName || user.email}
+                </div>
+              ) : (
                 <>
-                  <Link 
-                    href="/dashboard" 
-                    className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-gray-300 transition-colors"
+                  <Link
+                    href="/login"
+                    className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                   >
-                    Tableau de bord
+                    <i className="fas fa-sign-in-alt mr-2"></i>
+                    Connexion
                   </Link>
-                  
-                  <Link 
-                    href="/calculator" 
-                    className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-gray-300 transition-colors"
+                  <Link
+                    href="/register"
+                    className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
                   >
-                    Calculateur
-                  </Link>
-                  
-                  <Link 
-                    href="/history" 
-                    className="inline-flex items-center px-1 pt-1 text-gray-500 hover:text-gray-700 border-b-2 border-transparent hover:border-gray-300 transition-colors"
-                  >
-                    Historique
+                    <i className="fas fa-user-plus mr-2"></i>
+                    Inscription
                   </Link>
                 </>
               )}
             </div>
-          </div>
-          
-          <div className="hidden sm:ml-6 sm:flex sm:items-center">
-            {user ? (
-              <div className="ml-3 relative">
-                <div className="flex items-center">
-                  <span className="text-gray-700 mr-4 hidden md:block">
-                    {user.displayName || user.email}
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                  >
-                    Déconnexion
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="flex space-x-4">
-                <Link 
-                  href="/login" 
-                  className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md transition-colors"
-                >
-                  Connexion
-                </Link>
-                <Link 
-                  href="/register" 
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                >
-                  Inscription
-                </Link>
-              </div>
-            )}
-          </div>
-          
-          <div className="-mr-2 flex items-center sm:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              aria-expanded="false"
-            >
-              <span className="sr-only">Ouvrir le menu</span>
-              {isMenuOpen ? (
-                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      {/* Menu mobile */}
-      <div className={`${isMenuOpen ? 'block' : 'hidden'} sm:hidden transition-all duration-300 ease-in-out`}>
-        <div className="pt-2 pb-3 space-y-1 bg-white shadow-lg">
-          <Link 
-            href="/" 
-            className="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 transition-colors"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Accueil
-          </Link>
-          
-          {user && (
-            <>
-              <Link 
-                href="/dashboard" 
-                className="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Tableau de bord
-              </Link>
-              
-              <Link 
-                href="/calculator" 
-                className="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Calculateur
-              </Link>
-              
-              <Link 
-                href="/history" 
-                className="block pl-3 pr-4 py-2 text-base font-medium text-gray-600 hover:text-gray-800 hover:bg-gray-50 border-l-4 border-transparent hover:border-gray-300 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Historique
-              </Link>
-            </>
-          )}
-        </div>
-        
-        <div className="pt-4 pb-3 border-t border-gray-200 bg-gray-50">
-          {user ? (
-            <div className="px-4 py-2">
-              <div className="text-base font-medium text-gray-800 mb-3">
-                {user.displayName || user.email}
-              </div>
+
+            {/* Bouton mobile */}
+            <div className="md:hidden flex items-center">
               <button
-                onClick={() => {
-                  handleLogout();
-                  setIsMenuOpen(false);
-                }}
-                className="w-full text-left px-4 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none"
+                aria-expanded="false"
               >
-                Déconnexion
+                <span className="sr-only">Ouvrir le menu</span>
+                <i className={`fas fa-${isMenuOpen ? 'times' : 'bars'} text-lg`}></i>
               </button>
             </div>
-          ) : (
-            <div className="px-4 py-3 space-y-3">
-              <Link 
-                href="/login"
-                onClick={() => setIsMenuOpen(false)}
-                className="block w-full text-center px-4 py-2 text-base font-medium text-gray-600 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+          </div>
+        </div>
+
+        {/* Menu Mobile */}
+        <div className={`md:hidden transition-all duration-300 overflow-hidden ${isMenuOpen ? 'max-h-screen' : 'max-h-0'}`}>
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-white shadow-lg border-t">
+            {/* Liens publics mobile */}
+            {publicLinks.map((link) => (
+              <MobileNavItem 
+                key={link.href}
+                href={link.href} 
+                icon={link.icon} 
+                onClick={closeAll}
               >
-                Connexion
-              </Link>
-              <Link 
-                href="/register"
-                onClick={() => setIsMenuOpen(false)}
-                className="block w-full text-center px-4 py-2 text-base font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
+                {link.label}
+              </MobileNavItem>
+            ))}
+
+            {/* Menus déroulants mobile */}
+            {publicDropdowns.map((dropdown) => (
+              <MobileDropdown 
+                key={dropdown.id}
+                title={dropdown.title}
+                icon={dropdown.icon}
+                isOpen={activeDropdown === `${dropdown.id}-mobile`}
+                onClick={() => toggleDropdown(`${dropdown.id}-mobile`)}
               >
-                Inscription
-              </Link>
+                {dropdown.items.map((item) => (
+                  <MobileDropdownItem 
+                    key={item.href}
+                    href={item.href}
+                    icon={item.icon}
+                    brandIcon={item.brandIcon}
+                    onClick={closeAll}
+                  >
+                    {item.label}
+                  </MobileDropdownItem>
+                ))}
+              </MobileDropdown>
+            ))}
+
+            {/* Actions utilisateur mobile */}
+            <div className="pt-4 border-t border-gray-200">
+              {user ? (
+                <div className="px-2 space-y-3">
+                  <div className="px-3 py-2 text-base font-medium text-gray-700">
+                    <i className="fas fa-user-circle mr-2 text-blue-500"></i>
+                    {user.displayName || user.email}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link
+                    href="/login"
+                    onClick={closeAll}
+                    className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                  >
+                    <i className="fas fa-sign-in-alt mr-2"></i>
+                    Connexion
+                  </Link>
+                  <Link
+                    href="/register"
+                    onClick={closeAll}
+                    className="block px-4 py-2 text-base font-medium text-center text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    <i className="fas fa-user-plus mr-2"></i>
+                    Inscription
+                  </Link>
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        </div>
+      </nav>
+
+      {/* Barre de navigation protégée (seulement visible quand connecté) */}
+      {user && (
+        <nav className={`fixed top-16 w-full z-40 bg-blue-50 shadow-sm transition-all duration-300 ${scrolled ? 'py-1' : 'py-2'}`}>
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center h-12">
+              {/* Menu Desktop */}
+              <div className="hidden md:flex items-center space-x-1">
+                {protectedLinks.map((link) => (
+                  <ProtectedNavItem 
+                    key={link.href}
+                    href={link.href} 
+                    icon={link.icon}
+                    brandIcon={link.brandIcon}
+                    onClick={closeAll}
+                  >
+                    {link.label}
+                  </ProtectedNavItem>
+                ))}
+
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors ml-4"
+                >
+                  <i className="fas fa-sign-out-alt mr-2"></i>
+                  Déconnexion
+                </button>
+              </div>
+
+              {/* Menu Mobile */}
+              <div className="md:hidden flex items-center w-full">
+                <select 
+                  className="w-full p-2 rounded-md border border-gray-300 bg-white text-gray-700"
+                  onChange={(e) => {
+                    if (e.target.value === 'logout') {
+                      handleLogout();
+                    } else {
+                      router.push(e.target.value);
+                    }
+                    closeAll();
+                  }}
+                >
+                  <option value="">Menu utilisateur</option>
+                  {protectedLinks.map((link) => (
+                    <option key={link.href} value={link.href}>
+                      {link.label}
+                    </option>
+                  ))}
+                  <option value="logout">Déconnexion</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </nav>
+      )}
+    </>
+  );
+};
+
+// Composants réutilisables (avec ajout du ProtectedNavItem)
+
+const NavItem: React.FC<{
+  href: string;
+  icon: string;
+  brandIcon?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ href, icon, brandIcon = false, onClick, children }) => (
+  <Link
+    href={href}
+    className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors"
+    onClick={onClick}
+  >
+    <i className={`${brandIcon ? 'fab' : 'fas'} fa-${icon} mr-2 w-5 text-center`}></i>
+    {children}
+  </Link>
+);
+
+const ProtectedNavItem: React.FC<{
+  href: string;
+  icon: string;
+  brandIcon?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ href, icon, brandIcon = false, onClick, children }) => (
+  <Link
+    href={href}
+    className="flex items-center px-3 py-2 text-sm font-medium text-blue-700 hover:text-blue-800 hover:bg-blue-100 rounded-md transition-colors"
+    onClick={onClick}
+  >
+    <i className={`${brandIcon ? 'fab' : 'fas'} fa-${icon} mr-2 w-5 text-center`}></i>
+    {children}
+  </Link>
+);
+
+const MobileNavItem: React.FC<{
+  href: string;
+  icon: string;
+  brandIcon?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ href, icon, brandIcon = false, onClick, children }) => (
+  <Link
+    href={href}
+    className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors"
+    onClick={onClick}
+  >
+    <i className={`${brandIcon ? 'fab' : 'fas'} fa-${icon} mr-3 w-5 text-center`}></i>
+    {children}
+  </Link>
+);
+
+const DropdownMenu: React.FC<{
+  title: string;
+  icon: string;
+  isActive: boolean;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ title, icon, isActive, onMouseEnter, onMouseLeave, onClick, children }) => (
+  <div 
+    className="relative"
+    onMouseEnter={onMouseEnter}
+    onMouseLeave={onMouseLeave}
+  >
+    <button
+      className={`flex items-center px-3 py-2 text-sm font-medium ${isActive ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'} hover:bg-gray-50 rounded-md transition-colors`}
+      onClick={onClick}
+    >
+      <i className={`fas fa-${icon} mr-2 w-5 text-center`}></i>
+      {title}
+      <i className={`fas fa-chevron-down ml-1 text-xs transition-transform ${isActive ? 'transform rotate-180' : ''}`}></i>
+    </button>
+    
+    {isActive && (
+      <div className="absolute left-0 mt-2 w-56 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+        <div className="py-1">
+          {children}
         </div>
       </div>
-    </nav>
-  );
-}; 
+    )}
+  </div>
+);
+
+const DropdownItem: React.FC<{
+  href: string;
+  icon: string;
+  brandIcon?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ href, icon, brandIcon = false, onClick, children }) => (
+  <Link
+    href={href}
+    className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition-colors"
+    onClick={onClick}
+  >
+    <i className={`${brandIcon ? 'fab' : 'fas'} fa-${icon} mr-3 w-5 text-center`}></i>
+    {children}
+  </Link>
+);
+
+const MobileDropdown: React.FC<{
+  title: string;
+  icon: string;
+  isOpen: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ title, icon, isOpen, onClick, children }) => (
+  <div className="space-y-1">
+    <button
+      onClick={onClick}
+      className="w-full flex items-center justify-between px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors"
+    >
+      <div className="flex items-center">
+        <i className={`fas fa-${icon} mr-3 w-5 text-center`}></i>
+        {title}
+      </div>
+      <i className={`fas fa-chevron-down text-xs transition-transform ${isOpen ? 'transform rotate-180' : ''}`}></i>
+    </button>
+    
+    <div className={`pl-8 space-y-1 ${isOpen ? 'block' : 'hidden'}`}>
+      {children}
+    </div>
+  </div>
+);
+
+const MobileDropdownItem: React.FC<{
+  href: string;
+  icon: string;
+  brandIcon?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}> = ({ href, icon, brandIcon = false, onClick, children }) => (
+  <Link
+    href={href}
+    className="flex items-center px-3 py-2 text-base font-medium text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded-md transition-colors"
+    onClick={onClick}
+  >
+    <i className={`${brandIcon ? 'fab' : 'fas'} fa-${icon} mr-3 w-5 text-center`}></i>
+    {children}
+  </Link>
+);
