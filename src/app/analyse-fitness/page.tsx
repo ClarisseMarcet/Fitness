@@ -1327,22 +1327,24 @@ export default function DashboardPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Disponibilité - {userData.frequence} jours/semaine
-                    </label>
-                    <input 
-                      type="range" 
-                      min="1" 
-                      max="7" 
-                      value={userData.frequence}
-                      onChange={(e) => handleUserDataChange('frequence', parseInt(e.target.value))}
-                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="flex justify-between text-xs text-gray-400 mt-1">
-                      <span>1 jour</span>
-                      <span>7 jours</span>
-                    </div>
-                  </div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                         Disponibilité - {userData.frequence} jours/semaine
+                      </label>
+                        <input 
+                          type="range" 
+                             min="1" 
+                             max="7" 
+                                value={userData.frequence}
+                                 // Conversion explicite de la valeur en string si handleUserDataChange attend un string
+                                  onChange={(e) => handleUserDataChange('frequence', e.target.value.toString())}
+                                   className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                                 />
+                                <div className="flex justify-between text-xs text-gray-400 mt-1">
+                                <span>1 jour</span>
+                               <span>7 jours</span>
+                        </div>
+                      </div>
+
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Jours de disponibilité</label>
