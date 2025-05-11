@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+
 import { MainLayout } from '../components/layout/MainLayout';
 import { useAuth } from '../contexts/AuthContext';
 import Link from 'next/link';

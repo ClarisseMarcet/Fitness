@@ -734,7 +734,7 @@ export default function DashboardPage() {
     }
   };
 
-  const handleUserDataChange = (field: keyof User, value: string | string[]) => {
+  const handleUserDataChange = (field: keyof User, value: string | string[] | number) => {
     setUserData(prev => ({
       ...prev,
       [field]: value
@@ -1322,29 +1322,27 @@ export default function DashboardPage() {
                       placeholder="Ton sport n'est pas listé ? Écris-le ici et appuie sur Entrée"
                       onKeyDown={handleSportPersonnalise}
                       disabled={userData.sportsSelectionnes.length >= 3}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-gray-100"
                     />
                   </div>
                   
                   <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">
-                         Disponibilité - {userData.frequence} jours/semaine
-                      </label>
-                        <input 
-                          type="range" 
-                             min="1" 
-                             max="7" 
-                                value={userData.frequence}
-                                 // Conversion explicite de la valeur en string si handleUserDataChange attend un string
-                                  onChange={(e) => handleUserDataChange('frequence', e.target.value.toString())}
-                                   className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                                 />
-                                <div className="flex justify-between text-xs text-gray-400 mt-1">
-                                <span>1 jour</span>
-                               <span>7 jours</span>
-                        </div>
-                      </div>
-
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Disponibilité - {userData.frequence} jours/semaine
+                    </label>
+                    <input 
+                      type="range" 
+                      min="1" 
+                      max="7" 
+                      value={userData.frequence}
+                      onChange={(e) => handleUserDataChange('frequence', parseInt(e.target.value))}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                    />
+                    <div className="flex justify-between text-xs text-gray-400 mt-1">
+                      <span>1 jour</span>
+                      <span>7 jours</span>
+                    </div>
+                  </div>
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">Jours de disponibilité</label>
@@ -1375,7 +1373,7 @@ export default function DashboardPage() {
                     <textarea
                       value={userData.objectifs || ''}
                       onChange={(e) => handleUserDataChange('objectifs', e.target.value)}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100"
                       rows={3}
                       placeholder="Décrivez vos objectifs sportifs..."
                     />
@@ -1386,7 +1384,7 @@ export default function DashboardPage() {
                     <textarea
                       value={userData.blessures || ''}
                       onChange={(e) => handleUserDataChange('blessures', e.target.value)}
-                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-100"
                       rows={2}
                       placeholder="Décrivez vos blessures ou limitations..."
                     />
@@ -1411,7 +1409,7 @@ export default function DashboardPage() {
                         >
                           <span className="text-2xl">{choice.icon}</span>
                           <span className="text-left">
-                            <span className="block font-medium">{choice.label.split(' - ')[0]}</span>
+                            <span className="block font-medium text-gray-100">{choice.label.split(' - ')[0]}</span>
                             <span className="block text-xs text-gray-400">{choice.label.split(' - ')[1]}</span>
                           </span>
                         </button>

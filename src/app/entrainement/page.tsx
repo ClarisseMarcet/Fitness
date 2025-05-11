@@ -8,6 +8,8 @@ import {
   faTrophy, faPlusCircle, faCheck, faSpinner, faTimes, 
   faLightbulb, faBook, faCalendarAlt, faRunning, faRefresh 
 } from '@fortawesome/free-solid-svg-icons';
+import { Navbar } from "@/components/layout/Navbar";
+
 
 interface Category {
   id: number;
@@ -66,7 +68,7 @@ const Entrainement: React.FC = () => {
   useEffect(() => {
     const fetchAllWorkouts = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/entrainements`);
+        const response = await fetch(`/api/entrainements`);
         const data = await response.json();
         if (Array.isArray(data)) {
           setWorkouts(data);
@@ -100,12 +102,12 @@ const Entrainement: React.FC = () => {
     // Simulation d'appel API
     return new Promise<string>((resolve) => {
       setTimeout(() => {
-        const advices = {
+        const advices: Record<string, string[]> = {
           Nutrition: ["Mangez des protéines maigres après l'entraînement.", "Hydratez-vous régulièrement tout au long de la journée."],
           Performance: ["Augmentez vos poids progressivement chaque semaine.", "Variez vos exercices pour éviter les plateaux."],
           Récupération: ["Étirez-vous pendant 10 minutes après chaque séance.", "Prenez au moins un jour de repos par semaine."]
         };
-        const randomAdvice = advices[category as keyof typeof advices][Math.floor(Math.random() * advices[category as keyof typeof advices].length)];
+        const randomAdvice = advices[category][Math.floor(Math.random() * advices[category].length)];
         resolve(randomAdvice);
       }, 1500);
     });
@@ -122,6 +124,8 @@ const Entrainement: React.FC = () => {
 
   return (
     <PageContainer>
+      <Navbar />
+      
       {/* Hero Section avec vidéo */}
       <VideoHero>
         <VideoBackground autoPlay loop muted playsInline>
@@ -148,7 +152,7 @@ const Entrainement: React.FC = () => {
             {popularCategories.map((cat) => (
               <CategoryCard 
                 key={cat.id} 
-                bg={cat.color}
+                $bg={cat.color}
                 onClick={() => router.push(`/entrainement/categorie/${cat.nom.toLowerCase()}`)}
               >
                 <CategoryImage src={cat.image} alt={cat.nom} />
@@ -179,13 +183,13 @@ const Entrainement: React.FC = () => {
             </AddGoal>
             <GoalsList>
               {userGoals.map((goal) => (
-                <GoalItem key={goal.id} completed={goal.completed}>
+                <GoalItem key={goal.id} $completed={goal.completed}>
                   <GoalButton onClick={() => toggleGoal(goal.id)}>
                     <FontAwesomeIcon
                       icon={goal.completed ? faCheck : faSpinner}
                     />
                   </GoalButton>
-                  <GoalText>{goal.text}</GoalText>
+                  <GoalText $completed={goal.completed}>{goal.text}</GoalText>
                   <DeleteButton onClick={() => setUserGoals(userGoals.filter(g => g.id !== goal.id))}>
                     <FontAwesomeIcon icon={faTimes} />
                   </DeleteButton>
@@ -293,7 +297,7 @@ const Entrainement: React.FC = () => {
                 <PageButton
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
-                  active={currentPage === i + 1}
+                  $active={currentPage === i + 1}
                 >
                   {i + 1}
                 </PageButton>
@@ -313,6 +317,7 @@ export default Entrainement;
 const PageContainer = styled.div`
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
+  padding-top: 80px;
 `;
 
 const VideoHero = styled.div`
@@ -442,8 +447,8 @@ const CategoryGrid = styled.div`
   }
 `;
 
-const CategoryCard = styled.div<{ bg: string }>`
-  background-color: ${(props) => props.bg};
+const CategoryCard = styled.div<{ $bg: string }>`
+  background-color: ${(props) => props.$bg};
   border-radius: 6px;
   padding: 1.5rem;
   text-align: center;
@@ -548,14 +553,14 @@ const GoalsList = styled.div`
   gap: 0.8rem;
 `;
 
-const GoalItem = styled.div<{ completed: boolean }>`
+const GoalItem = styled.div<{ $completed: boolean }>`
   display: flex;
   align-items: center;
   padding: 0.8rem 1rem;
-  background: ${props => props.completed ? '#f0fdf4' : '#fff7ed'};
+  background: ${props => props.$completed ? '#f0fdf4' : '#fff7ed'};
   border-radius: 8px;
   transition: all 0.3s;
-  border-left: 4px solid ${props => props.completed ? '#10b981' : '#f59e0b'};
+  border-left: 4px solid ${props => props.$completed ? '#10b981' : '#f59e0b'};
 
   &:hover {
     transform: translateX(5px);
@@ -565,16 +570,16 @@ const GoalItem = styled.div<{ completed: boolean }>`
 const GoalButton = styled.button`
   background: none;
   border: none;
-  color: ${props => props.theme.colors?.primary || '#4CC9F0'};
+  color: #4CC9F0;
   cursor: pointer;
   margin-right: 1rem;
   font-size: 1.1rem;
 `;
 
-const GoalText = styled.span<{ completed?: boolean }>`
+const GoalText = styled.span<{ $completed?: boolean }>`
   flex: 1;
-  text-decoration: ${props => props.completed ? 'line-through' : 'none'};
-  color: ${props => props.completed ? '#6b7280' : '#1f2937'};
+  text-decoration: ${props => props.$completed ? 'line-through' : 'none'};
+  color: ${props => props.$completed ? '#6b7280' : '#1f2937'};
 `;
 
 const DeleteButton = styled.button`
@@ -757,16 +762,16 @@ const Pagination = styled.div`
   margin-top: 2rem;
 `;
 
-const PageButton = styled.button<{ active?: boolean }>`
+const PageButton = styled.button<{ $active?: boolean }>`
   padding: 0.5rem 1rem;
   border: none;
-  background: ${props => props.active ? '#4CC9F0' : '#e5e7eb'};
-  color: ${props => props.active ? 'white' : '#4b5563'};
+  background: ${props => props.$active ? '#4CC9F0' : '#e5e7eb'};
+  color: ${props => props.$active ? 'white' : '#4b5563'};
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: ${props => props.active ? '#3aa8d8' : '#d1d5db'};
+    background: ${props => props.$active ? '#3aa8d8' : '#d1d5db'};
   }
 `;
