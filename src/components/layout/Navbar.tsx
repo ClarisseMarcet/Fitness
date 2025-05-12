@@ -54,8 +54,8 @@ export const Navbar: React.FC = () => {
       items: [
         { href: "/entrainement", icon: "calendar-alt", label: "Séances" },
         { href: "/exercices", icon: "book", label: "Bibliothèque" },
-        { href: "/FitnessDashboard", icon: "tachometer-alt", label: "Mon Espace" },
-        { href: "/StravaSyncButton", icon: "strava", brandIcon: true, label: "Activités Strava" }
+        { href: "/activites", icon: "activites", label: "entrainenemt" },
+        { href: "/entarinements", icon: "entarinements", brandIcon: true, label: "mes-activite" }
       ]
     },
   ];
